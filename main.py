@@ -1,49 +1,42 @@
-#import requirement libraries
 import os
 import wget
 import json
 from pathlib import Path
-
 import math
 import string
 import random
-
 import jdatetime
 from datetime import datetime, timezone, timedelta
-
-#import web-based libraries
 import html
 import requests
 from bs4 import BeautifulSoup
-
-#import regex and encoding libraries
 import re
 import base64
-
-#import custom python script
 from title import check_modify_config, create_country, create_country_table, create_internet_protocol
 
-# اطمینان از وجود پوشه splitted
 os.makedirs('./splitted', exist_ok=True)
+os.makedirs('./geoip-lite', exist_ok=True)
+os.makedirs('./security', exist_ok=True)
+os.makedirs('./protocols', exist_ok=True)
+os.makedirs('./networks', exist_ok=True)
+os.makedirs('./layers', exist_ok=True)
+os.makedirs('./subscribe', exist_ok=True)
+os.makedirs('./channels', exist_ok=True)
 
-# Create the geoip-lite folder if it doesn't exist
-if not os.path.exists('./geoip-lite'):
-    os.mkdir('./geoip-lite')
-
-if os.path.exists('./geoip-lite/geoip-lite-country.mmdb'):
-    os.remove('./geoip-lite/geoip-lite-country.mmdb')
-
-# Download the file and rename it
+geoip_path = './geoip-lite/geoip-lite-country.mmdb'
 url = 'https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-Country.mmdb'
 filename = 'geoip-lite-country.mmdb'
-wget.download(url, filename)
-os.rename(filename, os.path.join('./geoip-lite', filename))
 
-# Clean up unmatched file
+if not os.path.exists(geoip_path):
+    try:
+        wget.download(url, filename)
+        os.rename(filename, geoip_path)
+    except Exception as e:
+        print(f"خطا در دانلود فایل: {e}")
+
 with open("./splitted/no-match", "w") as no_match_file:
     no_match_file.write("#Non-Adaptive Configurations\n")
 
-# Load and read last date and time update
 with open('./last update', 'r') as file:
     last_update_datetime = file.readline().strip()
     formats = [
@@ -59,10 +52,8 @@ with open('./last update', 'r') as file:
         except Exception:
             continue
     else:
-        # اگر هیچ فرمتی نخورد، مقدار پیش‌فرض قرار بده
         last_update_datetime = datetime.now(timezone(timedelta(hours=3, minutes=30))) - timedelta(days=1)
 
-# Write the current date and time update
 current_datetime_update = datetime.now(tz = timezone(timedelta(hours = 3, minutes = 30)))
 jalali_current_datetime_update = jdatetime.datetime.now(tz = timezone(timedelta(hours = 3, minutes = 30)))
 with open('./last update', 'w') as file:
@@ -78,8 +69,7 @@ def get_absolute_paths(start_path):
             abs_paths.append(str(abs_path))
     return abs_paths
 
-dirs_list = ['./security', './protocols', './networks', './layers'
-            './subscribe', './splitted', './channels']
+dirs_list = ['./security', './protocols', './networks', './layers', './subscribe', './splitted', './channels']
 
 if (int(jalali_current_datetime_update.day) == 1 and int(jalali_current_datetime_update.hour) == 0) or (int(jalali_current_datetime_update.day) == 15 and int(jalali_current_datetime_update.hour) == 0):
     print("The All Collected Configurations Cleared Based On Scheduled Day".title())
@@ -94,28 +84,73 @@ if (int(jalali_current_datetime_update.day) == 1 and int(jalali_current_datetime
             else:
                 continue
 
-
 def json_load(path):
-    # Open and read the json file
     with open(path, 'r') as file:
-        # Load json file content into list
         list_content = json.load(file)
-    # Return list of json content
-import os
-import wget
-import json
-from pathlib import Path
-import math
-import string
-import random
-import jdatetime
-from datetime import datetime, timezone, timedelta
-import html
-import requests
-from bs4 import BeautifulSoup
-import re
-import base64
-from title import check_modify_config, create_country, create_country_table, create_internet_protocol
+    return list_content
+
+def tg_channel_messages(channel_user):
+    try:
+        response = requests.get(f"https://t.me/s/{channel_user}")
+        soup = BeautifulSoup(response.text, "html.parser")
+        div_messages = soup.find_all("div", class_="tgme_widget_message")
+        return div_messages
+    except Exception as exc:
+        pass
+
+def find_matches(text_content):
+    pattern_telegram_user = r'(?:@)(\w{4,})'
+    pattern_url = r'(?i)\b((?:https?:(?:/{1,3}|[a-z0-9%])|[a-z0-9.\-]+[.](?:com|net|org|edu|gov|mil|aero|asia|biz|cat|coop|info|int|jobs|mobi|museum|name|post|pro|tel|travel|xxx|ac|ad|ae|af|ag|ai|al|am|an|ao|aq|ar|as|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|cr|cs|cu|cv|cx|cy|cz|dd|de|dj|dk|dm|do|dz|ec|ee|eg|eh|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|io|iq|ir|is|it|je|jm|jo|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mk|ml|mm|mn|mo|mp|mq|mr|ms|mt|mu|mv|mw|mx|my|mz|na|nc|ne|nf|ng|ni|nl|no|np|nr|nu|nz|om|pa|pe|pf|pg|ph|pk|pl|pm|pn|pr|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|Ja|sk|sl|sm|sn|so|sr|ss|st|su|sv|sx|sy|sz|tc|td|tf|tg|th|tj|tk|tl|tm|tn|to|tp|tr|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|ye|yt|yu|za|zm|zw)/)(?:[^\s()<>{}\[\]]+|\([^\s()]*?\([^\s()]+\)[^\s()]*?\)|\([^\s]+?\))+(?:\([^\s()]*?\([^\s()]+\)[^\s()]*?\)|\([^\s]+?\)|[^\s`!()\[\]{};:\'".,<>?«»“”‘’])|(?:(?<!@)[a-z0-9]+(?:[.\-][a-z0-9]+)*[.](?:com|net|org|edu|gov|mil|aero|asia|biz|cat|coop|info|int|jobs|mobi|museum|name|post|pro|tel|travel|xxx|ac|ad|ae|af|ag|ai|al|am|an|ao|aq|ar|as|at|au|aw|ax|az|ba|bb|bd|be|bf|bg|bh|bi|bj|bm|bn|bo|br|bs|bt|bv|bw|by|bz|ca|cc|cd|cf|cg|ch|ci|ck|cl|cm|cn|co|cr|cs|cu|cv|cx|cy|cz|dd|de|dj|dk|dm|do|dz|ec|ee|eg|eh|er|es|et|eu|fi|fj|fk|fm|fo|fr|ga|gb|gd|ge|gf|gg|gh|gi|gl|gm|gn|gp|gq|gr|gs|gt|gu|gw|gy|hk|hm|hn|hr|ht|hu|id|ie|il|im|in|io|iq|ir|is|it|je|jm|jo|jp|ke|kg|kh|ki|km|kn|kp|kr|kw|ky|kz|la|lb|lc|li|lk|lr|ls|lt|lu|lv|ly|ma|mc|md|me|mg|mh|mk|ml|mm|mn|mo|mp|mq|mr|ms|mt|mu|mv|mw|mx|my|mz|na|nc|ne|nf|ng|ni|nl|no|np|nr|nu|nz|om|pa|pe|pf|pg|ph|pk|pl|pm|pn|pr|ps|pt|pw|py|qa|re|ro|rs|ru|rw|sa|sb|sc|sd|se|sg|sh|si|sj|Ja|sk|sl|sm|sn|so|sr|ss|st|su|sv|sx|sy|sz|tc|td|tf|tg|th|tj|tk|tl|tm|tn|to|tp|tr|tt|tv|tw|tz|ua|ug|uk|us|uy|uz|va|vc|ve|vg|vi|vn|vu|wf|ws|ye|yt|yu|za|zm|zw)\b/?(?!@)))'
+    pattern_shadowsocks = r"(?<![\w-])(ss://[^\s<>#]+)"
+    pattern_trojan = r"(?<![\w-])(trojan://[^\s<>#]+)"
+    pattern_vmess = r"(?<![\w-])(vmess://[^\s<>#]+)"
+    pattern_vless = r"(?<![\w-])(vless://(?:(?!=reality)[^\s<>#])+(?=[\s<>#]))"
+    pattern_reality = r"(?<![\w-])(vless://[^\s<>#]+?security=reality[^\s<>#]*)"
+    pattern_tuic = r"(?<![\w-])(tuic://[^\s<>#]+)"
+    pattern_hysteria = r"(?<![\w-])(hysteria://[^\s<>#]+)"
+    pattern_hysteria_ver2 = r"(?<![\w-])(hy2://[^\s<>#]+)"
+    pattern_juicity = r"(?<![\w-])(juicity://[^\s<>#]+)"
+    matches_usersname = re.findall(pattern_telegram_user, text_content, re.IGNORECASE)
+    matches_url = re.findall(pattern_url, text_content, re.IGNORECASE)
+    matches_shadowsocks = re.findall(pattern_shadowsocks, text_content, re.IGNORECASE)
+    matches_trojan = re.findall(pattern_trojan, text_content, re.IGNORECASE)
+    matches_vmess = re.findall(pattern_vmess, text_content, re.IGNORECASE)
+    matches_vless = re.findall(pattern_vless, text_content, re.IGNORECASE)
+    matches_reality = re.findall(pattern_reality, text_content, re.IGNORECASE)
+    matches_tuic = re.findall(pattern_tuic, text_content)
+    matches_hysteria = re.findall(pattern_hysteria, text_content)
+    matches_hysteria_ver2 = re.findall(pattern_hysteria_ver2, text_content)
+    matches_juicity = re.findall(pattern_juicity, text_content)
+    for index, element in enumerate(matches_vmess):
+        matches_vmess[index] = re.sub(r"#[^#]+$", "", html.unescape(element))
+    for index, element in enumerate(matches_shadowsocks):
+        matches_shadowsocks[index] = (re.sub(r"#[^#]+$", "", html.unescape(element))+ f"#SHADOWSOCKS")
+    for index, element in enumerate(matches_trojan):
+        matches_trojan[index] = (re.sub(r"#[^#]+$", "", html.unescape(element))+ f"#TROJAN")
+    for index, element in enumerate(matches_vless):
+        matches_vless[index] = (re.sub(r"#[^#]+$", "", html.unescape(element))+ f"#VLESS")
+    for index, element in enumerate(matches_reality):
+        matches_reality[index] = (re.sub(r"#[^#]+$", "", html.unescape(element))+ f"#REALITY")
+    for index, element in enumerate(matches_tuic):
+        matches_tuic[index] = (re.sub(r"#[^#]+$", "", html.unescape(element))+ f"#TUIC")
+    for index, element in enumerate(matches_hysteria):
+        matches_hysteria[index] = (re.sub(r"#[^#]+$", "", html.unescape(element))+ f"#HYSTERIA")
+    for index, element in enumerate(matches_hysteria_ver2):
+        matches_hysteria_ver2[index] = (re.sub(r"#[^#]+$", "", html.unescape(element))+ f"#HYSTERIA")
+    for index, element in enumerate(matches_juicity):
+        matches_juicity[index] = (re.sub(r"#[^#]+$", "", html.unescape(element))+ f"#JUICITY")
+    matches_shadowsocks = [x for x in matches_shadowsocks if "…" not in x]
+    matches_trojan = [x for x in matches_trojan if "…" not in x]
+    matches_vmess = [x for x in matches_vmess if "…" not in x]
+    matches_vless = [x for x in matches_vless if "…" not in x]
+    matches_reality = [x for x in matches_reality if "…" not in x]
+    matches_tuic = [x for x in matches_tuic if "…" not in x]
+    matches_hysteria = [x for x in matches_hysteria if "…" not in x]
+    matches_hysteria_ver2 = [x for x in matches_hysteria_ver2 if "…" not in x]
+    matches_juicity = [x for x in matches_juicity if "…" not in x]
+    matches_hysteria.extend(matches_hysteria_ver2)
+    return matches_usersname, matches_url, matches_shadowsocks, matches_trojan, matches_vmess, matches_vless, matches_reality, matches_tuic, matches_hysteria, matches_juicity
+
 
 os.makedirs('./splitted', exist_ok=True)
 os.makedirs('./geoip-lite', exist_ok=True)
