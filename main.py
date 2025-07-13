@@ -23,6 +23,8 @@ import base64
 #import custom python script
 from title import check_modify_config, create_country, create_country_table, create_internet_protocol
 
+# اطمینان از وجود پوشه splitted
+os.makedirs('./splitted', exist_ok=True)
 
 # Create the geoip-lite folder if it doesn't exist
 if not os.path.exists('./geoip-lite'):
@@ -35,29 +37,38 @@ if os.path.exists('./geoip-lite/geoip-lite-country.mmdb'):
 url = 'https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-Country.mmdb'
 filename = 'geoip-lite-country.mmdb'
 wget.download(url, filename)
-
-# Move the file to the geoip folder
 os.rename(filename, os.path.join('./geoip-lite', filename))
-
 
 # Clean up unmatched file
 with open("./splitted/no-match", "w") as no_match_file:
     no_match_file.write("#Non-Adaptive Configurations\n")
 
-
 # Load and read last date and time update
 with open('./last update', 'r') as file:
-    last_update_datetime = file.readline()
-    last_update_datetime = datetime.strptime(last_update_datetime, '%Y-%m-%d %H:%M:%S.%f%z')
+    last_update_datetime = file.readline().strip()
+    formats = [
+        '%Y-%m-%d %H:%M:%S.%f%z',
+        '%Y-%m-%d %H:%M:%S%z',
+        '%Y-%m-%d %H:%M:%S.%f',
+        '%Y-%m-%d %H:%M:%S'
+    ]
+    for fmt in formats:
+        try:
+            last_update_datetime = datetime.strptime(last_update_datetime, fmt)
+            break
+        except Exception:
+            continue
+    else:
+        # اگر هیچ فرمتی نخورد، مقدار پیش‌فرض قرار بده
+        last_update_datetime = datetime.now(timezone(timedelta(hours=3, minutes=30))) - timedelta(days=1)
 
 # Write the current date and time update
+current_datetime_update = datetime.now(tz = timezone(timedelta(hours = 3, minutes = 30)))
+jalali_current_datetime_update = jdatetime.datetime.now(tz = timezone(timedelta(hours = 3, minutes = 30)))
 with open('./last update', 'w') as file:
-    current_datetime_update = datetime.now(tz = timezone(timedelta(hours = 3, minutes = 30)))
-    jalali_current_datetime_update = jdatetime.datetime.now(tz = timezone(timedelta(hours = 3, minutes = 30)))
     file.write(f'{current_datetime_update}')
 
 print(f"Latest Update: {last_update_datetime.strftime('%a, %d %b %Y %X %Z')}\nCurrent Update: {current_datetime_update.strftime('%a, %d %b %Y %X %Z')}")
-
 
 def get_absolute_paths(start_path):
     abs_paths = []
