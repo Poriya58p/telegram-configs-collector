@@ -1,0 +1,7 @@
+requests
+beautifulsoup4
+jdatetime
+maxminddb
+pycountry-convert
+tldextract
+dnspython
