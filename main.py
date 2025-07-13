@@ -48,7 +48,7 @@ with open("./splitted/no-match", "w") as no_match_file:
 # Load and read last date and time update
 with open('./last update', 'r') as file:
     last_update_datetime = file.readline()
-    last_update_datetime = datetime.strptime(last_update_datetime, 'Y-%m-%d %H:%M:%S.%f%z%')
+    last_update_datetime = datetime.strptime(last_update_datetime, '%Y-%m-%d %H:%M:%S.%f')
 
 # Write the current date and time update
 with open('./last update', 'w') as file:
