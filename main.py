@@ -24,15 +24,13 @@ os.makedirs('./subscribe', exist_ok=True)
 os.makedirs('./channels', exist_ok=True)
 
 geoip_path = './geoip-lite/geoip-lite-country.mmdb'
-url = 'https://github.com/P3TERX/GeoLite.mmdb/raw/download/GeoLite2-Country.mmdb'
-filename = 'geoip-lite-country.mmdb'
 
 if not os.path.exists(geoip_path):
-    try:
-        wget.download(url, filename)
-        os.rename(filename, geoip_path)
-    except Exception as e:
-        print(f"خطا در دانلود فایل: {e}")
+    print("فایل GeoLite2-Country.mmdb در پوشه مورد نظر پیدا نشد. لطفاً فایل را به مسیر './geoip-lite/' منتقل کنید.")
+    # اگر می‌خواهید برنامه متوقف شود، این خط را فعال کنید:
+    # import sys; sys.exit(1)
+else:
+    print("فایل GeoLite2-Country.mmdb با موفقیت شناسایی شد و برنامه ادامه می‌یابد.")
 
 with open("./splitted/no-match", "w") as no_match_file:
     no_match_file.write("#Non-Adaptive Configurations\n")
